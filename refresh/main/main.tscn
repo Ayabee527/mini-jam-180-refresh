@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=3 uid="uid://bm1bthnuj3y4l"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gibhb"]
+bg_color = Color(0, 0, 0, 1)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.890196, 0.784314, 0.207843, 1)
+
+[node name="Main" type="Node2D"]
+
+[node name="BG" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(256, 256)
+offset_right = 40.0
+offset_bottom = 40.0
+color = Color(0.0509804, 0.027451, 0.160784, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="BG"]
+custom_minimum_size = Vector2(256, 256)
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="PanelContainer" type="PanelContainer" parent="BG/MarginContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_gibhb")

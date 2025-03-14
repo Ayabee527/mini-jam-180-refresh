@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://dusc4r7li32o2"]
+
+[ext_resource type="FontFile" uid="uid://cqtksmv1t6g0g" path="res://assets/fonts/m5x7.ttf" id="1_hqddm"]
+
+[node name="EntityName" type="RichTextLabel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/normal_font = ExtResource("1_hqddm")
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+text = "[wave]entity"
+fit_content = true
+autowrap_mode = 0
