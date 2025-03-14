@@ -15,15 +15,34 @@
 		{
 			"uuid": "ebad9d50-c96b-40bc-93b5-276a852eae44",
 			"title": "Doing",
-			"tasks": []
+			"tasks": [
+				"c2d0fbd6-f1c1-453a-a515-094d39038cef"
+			]
 		},
 		{
 			"uuid": "fbbd719d-cfd4-4881-b29f-d429275d0c0c",
 			"title": "Done",
-			"tasks": []
+			"tasks": [
+				"1f0a2f8d-eb0a-47a2-8f0d-2090c16fddc5"
+			]
 		}
 	],
-	"tasks": [],
+	"tasks": [
+		{
+			"uuid": "1f0a2f8d-eb0a-47a2-8f0d-2090c16fddc5",
+			"title": "player",
+			"description": "",
+			"category": "4b23c459-06c2-44a6-a27c-c2157747bbb7",
+			"steps": []
+		},
+		{
+			"uuid": "c2d0fbd6-f1c1-453a-a515-094d39038cef",
+			"title": "first enemy",
+			"description": "",
+			"category": "4b23c459-06c2-44a6-a27c-c2157747bbb7",
+			"steps": []
+		}
+	],
 	"layout": {
 		"columns": [
 			[

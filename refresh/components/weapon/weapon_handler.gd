@@ -2,6 +2,7 @@ class_name WeaponHandler
 extends Node2D
 
 signal fired()
+signal recoiled(recoil: Vector2)
 
 @export var muzzle_distance: float = 8.0
 @export var muzzle_is_origin: bool = true
@@ -9,6 +10,7 @@ signal fired()
 
 @export var weapons: Array[Weapon]:
 	set = set_weapons
+@export var payload_override: Weapon
 
 @export_group("Inner Dependencies")
 @export var flash: GPUParticles2D
@@ -64,29 +66,41 @@ func shoot() -> void:
 		
 		var shoot_angle: float = weapon.rotation_offset + (weapon.angle_per_shot * i)
 		
-		attack.collision_data = collision_data
+		if weapon.collision_override != null:
+			attack.collision_data = weapon.collision_override
+		else:
+			attack.collision_data = collision_data
 		if muzzle_is_origin:
 			attack.global_position = muzzle.global_position
 		else:
 			attack.global_position = (
 				global_position
-				+ (Vector2.from_angle(global_rotation).rotated(shoot_angle) * muzzle_distance)
+				+ (Vector2.from_angle(global_rotation).rotated(deg_to_rad(shoot_angle)) * muzzle_distance)
 			)
-		attack.global_rotation = muzzle.global_rotation + weapon.angle_offset
+		attack.global_rotation_degrees = muzzle.global_rotation_degrees + weapon.angle_offset
 		attack.global_rotation += deg_to_rad(shoot_angle)
 		attack.global_rotation += deg_to_rad(
 			randf_range(-weapon.spread, weapon.spread)
 		)
 		
+		if payload_override != null:
+			weapon.payload = payload_override
+		
 		if weapon.payload:
 			attack_data.expired.connect( unleash_payload.bind(attack, weapon.payload) )
 			attack_data.trigger_payload.connect( unleash_payload.bind(attack, weapon.payload) )
 		
-		owner.get_parent().add_child.call_deferred(attack)
+		if weapon.stick_to_handler:
+			attack.position = Vector2.ZERO
+			attack.rotation = 0
+			add_child.call_deferred(attack)
+		else:
+			owner.get_parent().add_child.call_deferred(attack)
 	
 	sound.stream = weapon.attack_data.sound
 	sound.play()
 	fired.emit()
+	recoiled.emit(Vector2.from_angle(global_rotation).rotated(PI) * weapon.recoil_strength)
 	MainCam.shake(weapon.camera_shake_shake, weapon.camera_shake_speed, weapon.camera_shake_decay)
 	flash.restart()
 	if weapon.shot_cooldown > 0.0:
@@ -117,7 +131,10 @@ func unleash_payload(carrier: Node2D, payload: Weapon) -> void:
 		
 		var shoot_angle: float = payload.rotation_offset + (payload.angle_per_shot * i)
 		
-		attack.collision_data = collision_data
+		if payload.collision_override != null:
+			attack.collision_data = payload.collision_override
+		else:
+			attack.collision_data = collision_data
 		attack.global_position = carrier.global_position
 		attack.global_rotation = carrier.global_rotation + payload.angle_offset
 		attack.global_rotation += deg_to_rad(shoot_angle)

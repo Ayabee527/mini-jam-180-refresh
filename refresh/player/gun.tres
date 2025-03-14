@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=9 format=3 uid="uid://jbhrp5nrwqu"]
+
+[ext_resource type="Script" path="res://components/weapon/attack_data/hitbox_data/hitbox_data.gd" id="1_a241w"]
+[ext_resource type="Script" path="res://components/weapon/weapon.gd" id="1_y605h"]
+[ext_resource type="Script" path="res://components/weapon/attack_data/projectile_data.gd" id="2_h5w27"]
+[ext_resource type="AudioStream" uid="uid://c2lmfjic4musx" path="res://assets/sounds/thump1.wav" id="3_nf1k6"]
+[ext_resource type="Texture2D" uid="uid://buqowpr04xvu4" path="res://assets/textures/bullet_out.png" id="4_er1br"]
+
+[sub_resource type="Resource" id="Resource_mnax4"]
+script = ExtResource("1_a241w")
+damage = 1
+trigger_invinc = false
+damage_cooldown = 0.1
+knockback_strength = 32.0
+status_effect_ticks = 0
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_gvtgn"]
+random_pitch = 1.3
+streams_count = 1
+stream_0/stream = ExtResource("3_nf1k6")
+
+[sub_resource type="Resource" id="Resource_wj88t"]
+script = ExtResource("2_h5w27")
+life_time = 2.0
+start_speed = 384.0
+end_speed = 384.0
+accel_time = 0.0
+turn_speed = 0.0
+spin_speed = 0.0
+radius = 4.0
+max_pierces = 0.0
+homes = false
+targets = Array[String](["player"])
+start_home_speed = 360.0
+end_home_speed = 360.0
+home_accel_time = 0.0
+texture = ExtResource("4_er1br")
+trail_visible = false
+show_indicator = true
+indicator_radius = 12.0
+attack_name = ""
+hitbox_data = SubResource("Resource_mnax4")
+sound = SubResource("AudioStreamRandomizer_gvtgn")
+color = Color(1, 1, 1, 1)
+
+[resource]
+script = ExtResource("1_y605h")
+attack_data = SubResource("Resource_wj88t")
+spread = 3.0
+rotation_offset = 0.0
+shots_per_shot = 1
+shots_per_burst = 1
+angle_per_shot = 0.0
+angle_offset = 0.0
+shot_cooldown = 0.15
+burst_cooldown = 0.0
+camera_shake_shake = 4.0
+camera_shake_speed = 15.0
+camera_shake_decay = 3.0
+recoil_strength = 48.0
+stick_to_handler = false

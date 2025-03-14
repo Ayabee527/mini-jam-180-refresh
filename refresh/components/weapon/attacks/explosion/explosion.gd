@@ -27,8 +27,11 @@ func _ready() -> void:
 	debri.modulate = attack_data.color
 	
 	hitbox.damage = attack_data.hitbox_data.damage
+	hitbox.trigger_invinc = attack_data.hitbox_data.trigger_invinc
 	hitbox.damage_cooldown = attack_data.hitbox_data.damage_cooldown
 	hitbox.knockback_strength = attack_data.hitbox_data.knockback_strength
+	hitbox.status_effect = attack_data.hitbox_data.status_effect
+	hitbox.status_effect_ticks = attack_data.hitbox_data.status_effect_ticks
 	
 	var col_shape = CircleShape2D.new()
 	col_shape.radius = attack_data.radius
@@ -37,13 +40,11 @@ func _ready() -> void:
 	hitbox.collision_layer = collision_data.collision_layer
 	hitbox.collision_mask = collision_data.collision_mask
 	
-	debri.restart()
+	#debri.restart()
 	expand()
 	sustain_timer.start(attack_data.sustain_time)
 
 func expand() -> void:
-	hitbox_collision.set_deferred("disabled", false)
-	
 	var tween = create_tween().set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
 	tween.set_parallel()
 	tween.tween_property(
@@ -56,22 +57,20 @@ func expand() -> void:
 	).from(Vector2.ZERO)
 	tween.tween_property(
 		outline, "width",
-		4.0, attack_data.expand_time
+		attack_data.radius / 4.0, attack_data.expand_time
 	).from(0.0)
 	tween.play()
 	
-	#await get_tree().physics_frame
-	#hitbox_collision.set_deferred("disabled", false)
+	await get_tree().physics_frame
+	hitbox_collision.set_deferred("disabled", false)
 
 func fade() -> void:
-	#hitbox_collision.set_deferred("disabled", true)
-	
 	var tween = create_tween().set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
 	tween.set_parallel()
 	tween.tween_property(
 		outline, "width",
 		0.0, attack_data.expand_time
-	).from(4.0)
+	).from(attack_data.radius / 4.0)
 	tween.play()
 	
 	await tween.finished

@@ -36,8 +36,12 @@ func _ready() -> void:
 	hitbox.collision_layer = collision_data.collision_layer
 	hitbox.collision_mask = collision_data.collision_mask
 	hitbox.damage = attack_data.hitbox_data.damage
+	hitbox.trigger_invinc = attack_data.hitbox_data.trigger_invinc
 	hitbox.damage_cooldown = attack_data.hitbox_data.damage_cooldown
 	hitbox.knockback_strength = attack_data.hitbox_data.knockback_strength
+	
+	hitbox.status_effect = attack_data.hitbox_data.status_effect
+	hitbox.status_effect_ticks = attack_data.hitbox_data.status_effect_ticks
 	
 	hit_width = randi_range(attack_data.min_width, attack_data.max_width)
 	bolt.width = hit_width

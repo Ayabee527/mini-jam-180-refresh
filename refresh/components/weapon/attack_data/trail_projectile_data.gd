@@ -1,7 +1,7 @@
-class_name ProjectileData
+class_name TrailProjectileData
 extends AttackData
 
-const attack = preload("res://components/weapon/attacks/projectile/projectile.tscn")
+const attack = preload("res://components/weapon/attacks/trail_projectile/trail_projectile.tscn")
 
 @export_group("Basics")
 @export var life_time: float = 2.0
@@ -12,6 +12,10 @@ const attack = preload("res://components/weapon/attacks/projectile/projectile.ts
 @export var spin_speed: float = 0.0
 @export var radius: float = 3.0
 @export var max_pierces: float = 0
+
+@export_group("Trail")
+@export var trail_cooldown: float = 1.0
+@export var trail_weapon: Weapon
 
 @export_group("Homing")
 @export var homes: bool = false

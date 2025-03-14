@@ -28,4 +28,4 @@ default_color = Color(0, 0, 0, 1)
 width = 2.0
 width_curve = SubResource("Curve_l1opu")
 
-[node name="Hitbox" parent="." groups=["attacks"] instance=ExtResource("2_g2n74")]
+[node name="Hitbox" parent="." instance=ExtResource("2_g2n74")]

@@ -1,9 +1,9 @@
-class_name FallProjectileAttack
+class_name TrailProjectileAttack
 extends Area2D
 
 @export_group("Data")
 @export var collision_data: CollisionData
-@export var attack_data: FallProjectileData
+@export var attack_data: TrailProjectileData
 
 @export_group("Inner Dependencies")
 @export var sprite: HeightSprite
@@ -11,15 +11,23 @@ extends Area2D
 @export var trail_holder: Marker2D
 @export var trail: Trail
 @export var expire_particles: GPUParticles2D
+@export var weapon_handler: WeaponHandler
+
+@export var life_timer: Timer
+@export var trail_timer: Timer
 
 @export var hitbox: Hitbox
 @export var collision: CollisionShape2D
 @export var hitbox_collision: CollisionShape2D
+@export var health_indicator: HealthIndicator
+@export var offscreen_warning: OffscreenWarning
 
-var bounces: int = 0
+var pierces: int = 0
 
 var cur_speed: float = 0.0
+var cur_home_speed: float = 0.0
 var cur_accel_time: float = 0.0
+var cur_home_accel_time: float = 0.0
 
 var velocity: Vector2 = Vector2.ZERO
 var target: Node2D
@@ -44,6 +52,7 @@ func _ready() -> void:
 	hitbox.damage = attack_data.hitbox_data.damage
 	hitbox.trigger_invinc = attack_data.hitbox_data.trigger_invinc
 	hitbox.damage_cooldown = attack_data.hitbox_data.damage_cooldown
+	hitbox.knockback_strength = attack_data.hitbox_data.knockback_strength
 	hitbox.height_radius = attack_data.radius
 	hitbox.status_effect = attack_data.hitbox_data.status_effect
 	hitbox.status_effect_ticks = attack_data.hitbox_data.status_effect_ticks
@@ -53,24 +62,36 @@ func _ready() -> void:
 	hitbox.collision_layer = collision_layer
 	hitbox.collision_mask = collision_mask
 	
+	life_timer.start(attack_data.life_time)
 	cur_speed = attack_data.start_speed
 	
-	find_target()
+	health_indicator.radius = attack_data.indicator_radius
+	health_indicator.outline_color = attack_data.color.lightened(0.75)
+	health_indicator.entity_name = attack_data.attack_name
+	offscreen_warning.out_color = health_indicator.outline_color
+	offscreen_warning.color = attack_data.color
 	
-	sprite.bounce = attack_data.bounce_factor
-	sprite.jump(
-		attack_data.peak_height,
-		attack_data.time_to_peak,
-		attack_data.time_to_fall
-	)
-	for i: int in range(3):
-		await get_tree().process_frame
-	trail.length = 16
-	trail.show()
+	health_indicator.visible = attack_data.show_indicator
+	offscreen_warning.visible = attack_data.show_indicator
+	
+	trail_timer.start(attack_data.trail_cooldown)
+	weapon_handler.collision_data = collision_data
+	weapon_handler.weapons = [attack_data.trail_weapon]
+	
+	await get_tree().process_frame
+	find_target()
 
 func _physics_process(delta: float) -> void:
+	shadow.rotation_degrees += attack_data.spin_speed * delta
+	sprite.rotation_degrees += attack_data.spin_speed * delta
+	
 	if expired:
 		return
+	
+	if is_instance_valid(target) and attack_data.homes:
+		home_on_target(delta)
+	else:
+		global_rotation_degrees += attack_data.turn_speed * delta
 	
 	if attack_data.accel_time > 0.0:
 		cur_speed = lerpf(
@@ -81,24 +102,22 @@ func _physics_process(delta: float) -> void:
 		cur_accel_time += delta
 		cur_accel_time = min(cur_accel_time, abs(attack_data.accel_time))
 	
+	if attack_data.home_accel_time > 0.0:
+		cur_home_speed = lerpf(
+			attack_data.start_home_speed, attack_data.end_home_speed,
+			cur_accel_time / abs(attack_data.home_accel_time)
+		)
+	if cur_home_accel_time < attack_data.home_accel_time:
+		cur_home_accel_time += delta
+		cur_home_accel_time = min(cur_home_accel_time, abs(attack_data.home_accel_time))
+	
 	velocity = Vector2.from_angle(global_rotation) * cur_speed
 	global_position += velocity * delta
 
-func home_on_target() -> void:
+func home_on_target(delta: float) -> void:
 	var dir_to_target: Vector2 = global_position.direction_to(target.global_position)
 	var angle_to: float = Vector2.from_angle(global_rotation).angle_to(dir_to_target)
-	angle_to = rad_to_deg(angle_to)
-	angle_to += randf_range(-attack_data.inaccuracy, attack_data.inaccuracy)
-	var home_turn: float = signf(angle_to) * minf(
-		abs(angle_to), abs(attack_data.max_home_angle)
-	)
-	global_rotation_degrees += home_turn
-
-func turn_on_bounce() -> void:
-	var dir_to_target: Vector2 = Vector2.from_angle(global_rotation).rotated(attack_data.turn_angle)
-	var angle_to: float = Vector2.from_angle(global_rotation).angle_to(dir_to_target)
-	angle_to = rad_to_deg(angle_to)
-	global_rotation_degrees += angle_to
+	global_rotation_degrees += cur_home_speed * sign(angle_to) * delta
 
 func find_target() -> void:
 	if not is_inside_tree():
@@ -133,41 +152,36 @@ func expire() -> void:
 	attack_data.expired.emit()
 	expired = true
 	
-	hitbox_collision.set_deferred("disabled", true)
+	health_indicator.kill()
+	offscreen_warning.kill()
 	
 	expire_particles.restart()
 	shadow.hide()
 	sprite.hide()
-	trail.hide()
+	
+	hitbox_collision.set_deferred("disabled", true)
 	
 	await expire_particles.finished
 	queue_free()
 
-func _on_sprite_bounced() -> void:
-	if expired:
-		return
+func _on_life_timer_timeout() -> void:
+	expire()
+
+func _on_hitbox_hit(_hurtbox: Hurtbox) -> void:
+	pierces += 1
 	
-	bounces += 1
-	
-	if attack_data.trigger_payload_on_bounce:
-		attack_data.trigger_payload.emit()
-	trail.clear_points()
-	find_target()
-	
-	if is_instance_valid(target) and attack_data.homes:
-		home_on_target()
-	else:
-		turn_on_bounce()
-	
-	if bounces > attack_data.max_bounces:
+	if pierces > attack_data.max_pierces:
 		expire()
 
 
-func _on_sprite_height_changed(new_height: float) -> void:
+func _on_sprite_height_changed(_new_height: float) -> void:
+	trail_holder.position = sprite.offset
+	collision.position = sprite.offset
+
+
+func _on_trail_timer_timeout() -> void:
 	if expired:
+		trail_timer.stop()
 		return
 	
-	trail_holder.position = sprite.offset
-	hitbox.position = sprite.offset
-	hitbox.height = new_height
-	collision.position = sprite.offset
+	weapon_handler.shoot()

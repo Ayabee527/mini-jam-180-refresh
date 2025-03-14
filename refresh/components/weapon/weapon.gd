@@ -2,6 +2,7 @@ class_name Weapon
 extends Resource
 
 @export var attack_data: AttackData
+@export var collision_override: CollisionData
 @export var spread: float = 0.0
 @export var rotation_offset: float = 0.0
 @export var shots_per_shot: int = 1
@@ -13,4 +14,6 @@ extends Resource
 @export var camera_shake_shake: float = 5
 @export var camera_shake_speed: float = 15
 @export var camera_shake_decay: float = 15
+@export var recoil_strength: float = 24.0
 @export var payload: Weapon
+@export var stick_to_handler: bool = false

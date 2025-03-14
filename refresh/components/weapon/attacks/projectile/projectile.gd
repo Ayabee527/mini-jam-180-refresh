@@ -2,7 +2,6 @@ class_name ProjectileAttack
 extends Area2D
 
 @export_group("Data")
-@export var parry_coll_data: CollisionData
 @export var collision_data: CollisionData
 @export var attack_data: ProjectileData
 
@@ -18,7 +17,6 @@ extends Area2D
 @export var hitbox: Hitbox
 @export var collision: CollisionShape2D
 @export var hitbox_collision: CollisionShape2D
-@export var hurtbox_collision: CollisionShape2D
 
 var pierces: int = 0
 
@@ -45,14 +43,14 @@ func _ready() -> void:
 	shape.radius = attack_data.radius
 	collision.shape = shape
 	hitbox_collision.shape = shape
-	hurtbox_collision.shape = shape
-	
 	trail.width = (attack_data.radius - 1.0) * 2.0
 	
 	hitbox.damage = attack_data.hitbox_data.damage
+	hitbox.trigger_invinc = attack_data.hitbox_data.trigger_invinc
 	hitbox.damage_cooldown = attack_data.hitbox_data.damage_cooldown
 	hitbox.knockback_strength = attack_data.hitbox_data.knockback_strength
 	hitbox.height_radius = attack_data.radius
+	hitbox.status_effect_ticks = attack_data.hitbox_data.status_effect_ticks
 	
 	collision_layer = collision_data.collision_layer
 	collision_mask = collision_data.collision_mask
@@ -158,30 +156,3 @@ func _on_hitbox_hit(_hurtbox: Hurtbox) -> void:
 func _on_sprite_height_changed(_new_height: float) -> void:
 	trail_holder.position = sprite.offset
 	collision.position = sprite.offset
-
-
-func _on_hurtbox_knocked_back(knockback: Vector2) -> void:
-	if collision_data.collision_layer == 16:
-		return
-	
-	MainCam.shake(10.0, 5.0, 5.0)
-	MainCam.hitstop(0.05, 0.5)
-	look_at(global_position + target_enemies())
-	cur_speed *= 2.0
-	
-	collision_layer = parry_coll_data.collision_layer
-	collision_mask = parry_coll_data.collision_mask
-	hitbox.collision_layer = collision_layer
-	hitbox.collision_mask = collision_mask
-
-func target_enemies() -> Vector2:
-	var closest_target: Node2D
-	var closest_dist: float
-	for enemy: Node2D in get_tree().get_nodes_in_group("enemies"):
-		var dist = global_position.distance_squared_to(enemy.global_position)
-		if dist > closest_dist:
-			closest_dist = dist
-			closest_target = enemy
-	
-	target = closest_target
-	return global_position.direction_to(target.global_position)

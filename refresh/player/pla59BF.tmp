@@ -1,0 +1,49 @@
+[gd_scene load_steps=12 format=3 uid="uid://bss8kssf5fsnl"]
+
+[ext_resource type="Texture2D" uid="uid://dyxea0hxqw4w" path="res://assets/textures/player.png" id="1_038dq"]
+[ext_resource type="Script" path="res://player/player.gd" id="1_juwdv"]
+[ext_resource type="Script" path="res://components/states/state_machine.gd" id="2_hc60y"]
+[ext_resource type="Script" path="res://player/states/fall.gd" id="3_n40hq"]
+[ext_resource type="PackedScene" uid="uid://b1lcu4cgm3hjd" path="res://components/weapon/weapon_handler.tscn" id="4_sq7ts"]
+[ext_resource type="Script" path="res://components/weapon/collision_data/collision_data.gd" id="6_4i7sj"]
+[ext_resource type="Script" path="res://components/weapon/weapon.gd" id="7_bsxte"]
+[ext_resource type="Resource" uid="uid://jbhrp5nrwqu" path="res://player/gun.tres" id="8_pkesx"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_581mc"]
+bounce = 0.5
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_eftmn"]
+radius = 6.0
+
+[sub_resource type="Resource" id="Resource_fayng"]
+script = ExtResource("6_4i7sj")
+collision_layer = 32
+collision_mask = 4
+
+[node name="Player" type="RigidBody2D" node_paths=PackedStringArray("sprite", "weapon")]
+physics_material_override = SubResource("PhysicsMaterial_581mc")
+gravity_scale = 0.04
+lock_rotation = true
+script = ExtResource("1_juwdv")
+sprite = NodePath("Sprite2D")
+weapon = NodePath("WeaponHandler")
+
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
+script = ExtResource("2_hc60y")
+initial_state = NodePath("Fall")
+
+[node name="Fall" type="Node" parent="StateMachine"]
+script = ExtResource("3_n40hq")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_038dq")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_eftmn")
+
+[node name="WeaponHandler" parent="." instance=ExtResource("4_sq7ts")]
+rotation = 1.5708
+collision_data = SubResource("Resource_fayng")
+weapons = Array[ExtResource("7_bsxte")]([ExtResource("8_pkesx")])
+
+[connection signal="recoiled" from="WeaponHandler" to="." method="_on_weapon_handler_recoiled"]

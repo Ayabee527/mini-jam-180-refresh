@@ -7,6 +7,8 @@ signal knocked_back(knockback: Vector2)
 @export var height: float = 0.0
 @export var height_radius: float = 0.0
 @export var knockback_modifier: float = 3.0
+@export var cool_hitboxes: bool = true
+@export var force_invinc: bool = false
 
 @export_group("Inner Dependencies")
 @export var invinc_timer: Timer
@@ -19,26 +21,31 @@ func _process(_delta: float) -> void:
 			take_damage()
 
 func take_damage() -> void:
-	var chosen_hitbox: Hitbox = active_hitboxes.back() as Hitbox
-	
-	if chosen_hitbox.height_based:
-		if not is_in_height_range(chosen_hitbox):
+	for chosen_hitbox: Hitbox in active_hitboxes:
+		if not chosen_hitbox.can_damage():
 			return
-	
-	var hit_pos = chosen_hitbox.global_position + Vector2(0, chosen_hitbox.height)
-	var hurt_pos = global_position + Vector2(0, height)
-	
-	var knockback_dir: Vector2 = chosen_hitbox.global_position.direction_to(global_position)
-	var knockback: Vector2 = (
-		(knockback_dir + chosen_hitbox.knockback_skew).normalized()
-		* chosen_hitbox.knockback_strength * knockback_modifier
-	)
-	knocked_back.emit(knockback)
-	
-	chosen_hitbox.hit.emit(self)
-	hurt.emit(chosen_hitbox, chosen_hitbox.damage, chosen_hitbox.damage_cooldown)
-	
-	invinc_timer.start(chosen_hitbox.damage_cooldown)
+		
+		if chosen_hitbox.height_based:
+			if not is_in_height_range(chosen_hitbox):
+				return
+		
+		var hit_pos = chosen_hitbox.global_position + Vector2(0, chosen_hitbox.height)
+		var hurt_pos = global_position + Vector2(0, height)
+		
+		var knockback_dir: Vector2 = chosen_hitbox.global_position.direction_to(global_position)
+		var knockback: Vector2 = (
+			(knockback_dir + chosen_hitbox.knockback_skew).normalized()
+			* chosen_hitbox.knockback_strength * knockback_modifier
+		)
+		knocked_back.emit(knockback)
+		
+		chosen_hitbox.hit.emit(self)
+		hurt.emit(chosen_hitbox, chosen_hitbox.damage, chosen_hitbox.damage_cooldown)
+		
+		if chosen_hitbox.trigger_invinc or force_invinc:
+			invinc_timer.start(chosen_hitbox.damage_cooldown)
+		elif cool_hitboxes:
+			chosen_hitbox.cooldown()
 
 func is_in_height_range(hitbox: Hitbox) -> bool:
 	var hit_range: float = height_radius + hitbox.height_radius
