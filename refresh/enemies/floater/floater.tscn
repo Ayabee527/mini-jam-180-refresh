@@ -1,0 +1,59 @@
+[gd_scene load_steps=13 format=3 uid="uid://cmscqgdqjphkt"]
+
+[ext_resource type="PackedScene" uid="uid://ck7giesvc1amw" path="res://components/height_sprite/height_sprite.tscn" id="1_633g0"]
+[ext_resource type="Script" path="res://enemies/floater/floater.gd" id="1_i70ec"]
+[ext_resource type="Script" path="res://components/health/health.gd" id="1_ip65w"]
+[ext_resource type="Shader" path="res://components/flash.gdshader" id="2_cth5g"]
+[ext_resource type="Texture2D" uid="uid://d134tvim34cxl" path="res://assets/textures/small-empty-circle.png" id="3_6jd7a"]
+[ext_resource type="PackedScene" uid="uid://dvvktbgt1ayca" path="res://components/hurtbox/hurtbox.tscn" id="4_k8nbl"]
+[ext_resource type="PackedScene" uid="uid://bd83v7x2q3o7f" path="res://components/hitbox/hitbox.tscn" id="6_e5oiq"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_dgi07"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_l6v0u"]
+resource_local_to_scene = true
+shader = ExtResource("2_cth5g")
+shader_parameter/active = false
+shader_parameter/tint = Color(1, 0, 0, 1)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vmynv"]
+radius = 5.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mym0t"]
+size = Vector2(12, 4)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dkit8"]
+size = Vector2(12, 8)
+
+[node name="Floater" type="RigidBody2D"]
+collision_layer = 2
+physics_material_override = SubResource("PhysicsMaterial_dgi07")
+gravity_scale = -0.05
+script = ExtResource("1_i70ec")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("1_ip65w")
+max_health = 3
+
+[node name="HeightSprite" parent="." instance=ExtResource("1_633g0")]
+material = SubResource("ShaderMaterial_l6v0u")
+texture = ExtResource("3_6jd7a")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_vmynv")
+
+[node name="Hurtbox" parent="." instance=ExtResource("4_k8nbl")]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -4)
+shape = SubResource("RectangleShape2D_mym0t")
+
+[node name="Hitbox" parent="." instance=ExtResource("6_e5oiq")]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(0, 2)
+shape = SubResource("RectangleShape2D_dkit8")
+disabled = true
+
+[connection signal="hurt" from="Hurtbox" to="." method="_on_hurtbox_hurt"]
+[connection signal="knocked_back" from="Hurtbox" to="." method="_on_hurtbox_knocked_back"]

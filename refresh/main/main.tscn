@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://bm1bthnuj3y4l"]
+[gd_scene load_steps=10 format=3 uid="uid://bm1bthnuj3y4l"]
 
 [ext_resource type="Texture2D" uid="uid://cskb633sejnhj" path="res://assets/textures/light_bullet_turned.png" id="1_dulu4"]
 [ext_resource type="PackedScene" uid="uid://bss8kssf5fsnl" path="res://player/player.tscn" id="2_ergd5"]
+[ext_resource type="PackedScene" uid="uid://cmscqgdqjphkt" path="res://enemies/floater/floater.tscn" id="3_cw7tc"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gibhb"]
 bg_color = Color(0, 0, 0, 1)
@@ -79,6 +80,7 @@ layout_mode = 2
 position = Vector2(-18, -18)
 
 [node name="Wind" type="GPUParticles2D" parent="MarginContainer/Mask/World"]
+modulate = Color(1, 1, 1, 0.772549)
 position = Vector2(128, 256)
 amount = 40
 process_material = SubResource("ParticleProcessMaterial_o7bae")
@@ -102,3 +104,6 @@ collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MarginContainer/Mask/World/Walls/Wall2"]
 shape = SubResource("WorldBoundaryShape2D_ctwck")
+
+[node name="Floater" parent="MarginContainer/Mask/World" instance=ExtResource("3_cw7tc")]
+position = Vector2(128, 270)

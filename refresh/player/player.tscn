@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://bss8kssf5fsnl"]
+[gd_scene load_steps=20 format=3 uid="uid://bss8kssf5fsnl"]
 
 [ext_resource type="Texture2D" uid="uid://dyxea0hxqw4w" path="res://assets/textures/player.png" id="1_038dq"]
 [ext_resource type="Script" path="res://player/player.gd" id="1_juwdv"]
@@ -6,13 +6,22 @@
 [ext_resource type="Script" path="res://components/states/state_machine.gd" id="2_hc60y"]
 [ext_resource type="Script" path="res://player/states/fall.gd" id="3_n40hq"]
 [ext_resource type="PackedScene" uid="uid://b1lcu4cgm3hjd" path="res://components/weapon/weapon_handler.tscn" id="4_sq7ts"]
+[ext_resource type="PackedScene" uid="uid://ck7giesvc1amw" path="res://components/height_sprite/height_sprite.tscn" id="5_o8rgh"]
 [ext_resource type="Script" path="res://components/weapon/collision_data/collision_data.gd" id="6_4i7sj"]
+[ext_resource type="Shader" path="res://components/flash.gdshader" id="6_j8f4w"]
 [ext_resource type="Script" path="res://components/weapon/weapon.gd" id="7_bsxte"]
 [ext_resource type="Resource" uid="uid://jbhrp5nrwqu" path="res://player/gun.tres" id="8_pkesx"]
 [ext_resource type="PackedScene" uid="uid://dvvktbgt1ayca" path="res://components/hurtbox/hurtbox.tscn" id="9_tdsjr"]
+[ext_resource type="PackedScene" uid="uid://bd83v7x2q3o7f" path="res://components/hitbox/hitbox.tscn" id="11_xydou"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_581mc"]
 bounce = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_luk06"]
+resource_local_to_scene = true
+shader = ExtResource("6_j8f4w")
+shader_parameter/active = false
+shader_parameter/tint = Color(1, 0, 0, 1)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_eftmn"]
 radius = 6.0
@@ -25,6 +34,9 @@ collision_mask = 4
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_e3wrl"]
 size = Vector2(8, 8)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_26sfr"]
+size = Vector2(12, 4)
+
 [node name="Player" type="RigidBody2D" node_paths=PackedStringArray("sprite", "weapon", "health")]
 collision_layer = 6
 physics_material_override = SubResource("PhysicsMaterial_581mc")
@@ -32,7 +44,7 @@ gravity_scale = 0.2
 lock_rotation = true
 linear_damp = 1.0
 script = ExtResource("1_juwdv")
-sprite = NodePath("Sprite2D")
+sprite = NodePath("HeightSprite")
 weapon = NodePath("WeaponHandler")
 health = NodePath("Health")
 
@@ -46,8 +58,10 @@ initial_state = NodePath("Fall")
 [node name="Fall" type="Node" parent="StateMachine"]
 script = ExtResource("3_n40hq")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="HeightSprite" parent="." instance=ExtResource("5_o8rgh")]
+material = SubResource("ShaderMaterial_luk06")
 texture = ExtResource("1_038dq")
+hurt_color = Color(1, 0, 0, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_eftmn")
@@ -58,11 +72,24 @@ collision_data = SubResource("Resource_fayng")
 weapons = Array[ExtResource("7_bsxte")]([ExtResource("8_pkesx")])
 
 [node name="Hurtbox" parent="." instance=ExtResource("9_tdsjr")]
+collision_layer = 4
+collision_mask = 96
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 shape = SubResource("RectangleShape2D_e3wrl")
 
-[connection signal="fired" from="WeaponHandler" to="StateMachine/Fall" method="_on_weapon_handler_fired"]
+[node name="Hitbox" parent="." instance=ExtResource("11_xydou")]
+position = Vector2(0, 4)
+collision_layer = 16
+collision_mask = 8
+damage = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(0, 1)
+shape = SubResource("RectangleShape2D_26sfr")
+
+[connection signal="fired" from="WeaponHandler" to="." method="_on_weapon_handler_fired"]
 [connection signal="recoiled" from="WeaponHandler" to="." method="_on_weapon_handler_recoiled"]
 [connection signal="hurt" from="Hurtbox" to="." method="_on_hurtbox_hurt"]
 [connection signal="knocked_back" from="Hurtbox" to="." method="_on_hurtbox_knocked_back"]
+[connection signal="hit" from="Hitbox" to="." method="_on_hitbox_hit"]
